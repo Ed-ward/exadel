@@ -67,7 +67,7 @@ nothing added to commit but untracked files present (use "git add" to track)
 
 /* add some text from clone repo :) */
 /* это репо на другом диске (Е:) создан тутем клонирования из удаленного репо. */
-
+---------------------------------------------------------------------------------------
 user@PC MINGW64 /e/exadel/exadel/task1 (master)
 $ git status
 On branch master
@@ -81,4 +81,4 @@ Changes not staged for commit:
 no changes added to commit (use "git add" and/or "git commit -a")
 
 user@PC MINGW64 /e/exadel/exadel/task1 (master)
-
+---------------------------------------------------------------------------------------
