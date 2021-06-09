@@ -1,0 +1,29 @@
+
+/* полный вывод */
+
+user@PC MINGW64 /d/exadel (master)
+$ git log
+commit 1fc8ace5c3ce8a52e74e23cf71619b03f606a9f3 (HEAD -> master)
+Author: Ed_Elensky <elensky_ed516@mail.ru>
+Date:   Wed Jun 9 11:12:35 2021 +0300
+
+    add status.txt
+
+commit f60ea1c5e884886a1231e719ec0f7b22b1e7e038
+Author: Ed_Elensky <elensky_ed516@mail.ru>
+Date:   Wed Jun 9 10:54:42 2021 +0300
+
+    add .gitignore
+
+
+
+
+/* сокращенный вывод */
+
+user@PC MINGW64 /d/exadel (master)
+$ git log --oneline
+1fc8ace (HEAD -> master) add status.txt
+f60ea1c add .gitignore
+
+user@PC MINGW64 /d/exadel (master)
+$
