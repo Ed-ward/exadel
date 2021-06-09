@@ -63,3 +63,22 @@ nothing added to commit but untracked files present (use "git add" to track)
 
 
 /* P.S. IDEшка кстати тоже видит добавленные/недобавленные файлы и подсвечивает. Удобно. */
+
+
+/* add some text from clone repo :) */
+/* это репо на другом диске (Е:) создан тутем клонирования из удаленного репо. */
+
+user@PC MINGW64 /e/exadel/exadel/task1 (master)
+$ git status
+On branch master
+Your branch is up to date with 'origin/master'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   status.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+user@PC MINGW64 /e/exadel/exadel/task1 (master)
+
