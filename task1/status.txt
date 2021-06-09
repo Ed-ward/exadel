@@ -1,0 +1,65 @@
+﻿/* вывод гита до */
+---------------------------------------------------------------------------------------
+user@PC MINGW64 /d/exadel (master)
+$ git status
+On branch master
+
+No commits yet
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        .idea/
+        exadel.iml
+
+nothing added to commit but untracked files present (use "git add" to track)
+
+user@PC MINGW64 /d/exadel (master)
+---------------------------------------------------------------------------------------
+
+/*
+Как бы всё ясно - мы на ветке мастер, коммитить нечего, пустые папки гит не отображает.
+На самом деле там вот так:
+D:\exadel (master)
+λ tree /F /a
+Folder PATH listing for volume data-fast
+Volume serial number is 0000027D 786B:CF46
+D:.
+|   exadel.iml
+|
++---.idea
+|       .gitignore
+|       misc.xml
+|       modules.xml
+|       workspace.xml
+|
++---src
+\---task1
+        status.txt
+(виндовая tree не умеет в скрытые папки поэтому в D:\exadel папку .git не показывает, но она там есть
+https://docs.microsoft.com/ru-ru/windows-server/administration/windows-commands/tree )
+*/
+
+
+
+
+
+/* вывод гита после добавления */
+---------------------------------------------------------------------------------------
+user@PC MINGW64 /d/exadel (master)
+$ git status
+On branch master
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        task1/
+
+nothing added to commit but untracked files present (use "git add" to track)
+---------------------------------------------------------------------------------------
+
+/* 
+Тут гит уже не видит игнорируемые файлы. 
+Зато видит, что есть папка task1 с какими-то изменениями, но она пока не добавлена.
+Можно жахнуть git add * или добавить конкретный файл git add status.txt после чего сделать коммит.
+*/
+
+
+/* P.S. IDEшка кстати тоже видит добавленные/недобавленные файлы и подсвечивает. Удобно. */
