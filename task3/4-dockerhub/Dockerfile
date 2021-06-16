@@ -5,3 +5,4 @@ WORKDIR /hello
 RUN go build -o main . 
 CMD ["/hello/main"]
 EXPOSE 7700
+
