@@ -46,7 +46,23 @@
 ```docker-compose --version```
 
 
-### P.S. В этой же директории лежит скрипт для установки Docker в Ubuntu. </br>
+### P.S. В этой же директории лежит скрипт для установки Docker в Ubuntu (из OS). </br>
+
+* Для автоматической установки Docker при создании инстанса в AWS достаточно этого:
+```
+#!/usr/bin/env bash
+apt update
+apt install -y apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - 
+add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+apt update
+apt -y install docker-ce
+usermod -aG docker ubuntu
+curl -L "https://github.com/docker/compose/releases/download/1.25.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+```
+* Потом можно зайти и проверить, что всё установилось и работает:
+```sudo systemctl status docker```
 
 _____________
  
