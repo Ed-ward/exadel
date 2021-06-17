@@ -1,4 +1,5 @@
 ﻿FROM golang:alpine
+ENV DEVOPS="Ed_Elensky"
 RUN mkdir /hello 
 ADD ./hello /hello/ 
 WORKDIR /hello 
