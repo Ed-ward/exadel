@@ -1,0 +1,64 @@
+﻿# docker-compose.yml
+version: '2'
+services:
+
+    py1:
+        image: 8901310/exadel341:1.06g
+        environment:
+        - GREETING=hello1
+        env_file:
+        - .env
+
+    py2:
+        image: 8901310/exadel341:1.06g
+        environment:
+        - GREETING=hello2
+        env_file:
+        - .env
+
+    py3:
+        image: 8901310/exadel341:1.06g
+        environment:
+        - GREETING=hello3
+        env_file:
+        - .env
+
+    py4:
+        image: 8901310/exadel341:1.06g
+        environment:
+        - GREETING=hello4
+        env_file:
+        - .env
+
+    py5:
+        image: 8901310/exadel341:1.06g
+        environment:
+        - GREETING=hello5
+        env_file:
+        - .env
+
+    java:
+        depends_on:
+            - db
+        image: milkyway/java-hello-world:latest
+        environment:
+        - GREETING=hello6
+        env_file:
+        - .env
+
+    db:
+        depends_on:
+            - py1
+            - py2
+            - py3
+            - py4
+            - py5
+        image: mysql:5.7
+        restart: always
+        environment:
+            MYSQL_ROOT_PASSWORD: qwerty
+            MYSQL_DATABASE: base
+            МYSQL_USЕR: user
+            MYSQL_PASSWORD: qwerty
+        env_file:
+        - .env
