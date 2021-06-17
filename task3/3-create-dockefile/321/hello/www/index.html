@@ -9,7 +9,7 @@ function readfile()
 {
 var fso,filehandle,contents;
 fso = new ActiveXObject("Scripting.FileSystemObject");
-filehandle = fso.OpenTextFile("env.txt",1);/* Открывает файл*/
+filehandle = fso.OpenTextFile("/env.txt",1);/* Открывает файл*/
 contents = filehandle.ReadAll(); /* Читает из файла и переменная contents и есть весь текст, который он считал*/
 if (contents) document.all("filecontents").value = contents; /* Вставляет в текстбокс filecontents текст contents*/
 filehandle.close();/* Закрывает файл*/

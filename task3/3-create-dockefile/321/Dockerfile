@@ -3,7 +3,7 @@ RUN mkdir /hello
 ADD ./hello /hello/ 
 WORKDIR /hello 
 RUN go build -o main . 
-CMD ["/hello/main", "printenv DEVOPS > env.txt"]
+CMD ["/hello/main", "printenv DEVOPS > /www/env.txt"]
 EXPOSE 7700
 
 
