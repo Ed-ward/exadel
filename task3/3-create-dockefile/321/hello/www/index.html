@@ -1,0 +1,25 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<title>Open and Write</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=10" />
+<script language="JavaScript">
+function readfile()
+{
+var fso,filehandle,contents;
+fso = new ActiveXObject("Scripting.FileSystemObject");
+filehandle = fso.OpenTextFile("env.txt",1);/* Открывает файл*/
+contents = filehandle.ReadAll(); /* Читает из файла и переменная contents и есть весь текст, который он считал*/
+if (contents) document.all("filecontents").value = contents; /* Вставляет в текстбокс filecontents текст contents*/
+filehandle.close();/* Закрывает файл*/
+}
+
+</script>
+</head>
+<body onload="readfile()">
+env DevOps is:
+<textarea id="filecontents" cols="20" rows="1"></textarea>
+
+</body>
+</html>
