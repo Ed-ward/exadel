@@ -1,0 +1,18 @@
+[control_servers]
+srv0 ansible_host=172.31.25.69 ansible_user=ubuntu ansible_ssh_private_key_file=/home/ubuntu/.ssh/key-Ohio-amazon-web.pem
+
+[test_servers]
+srv1 ansible_host=172.31.22.187 ansible_user=ubuntu ansible_ssh_private_key_file=/home/ubuntu/.ssh/key-Ohio-amazon-web.pem
+
+[staging_servers]
+srv2 ansible_host=172.31.23.0 ansible_user=ubuntu ansible_ssh_private_key_file=/home/ubuntu/.ssh/key-Ohio-amazon-web.pem
+
+[prod_servers]
+srv3 ansible_host=172.31.19.5  ansible_user=ubuntu ansible_ssh_private_key_file=/home/ubuntu/.ssh/key-Ohio-amazon-web.pem
+
+
+
+
+
+
+
