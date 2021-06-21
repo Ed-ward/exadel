@@ -125,13 +125,151 @@ srv3 | SUCCESS => {
 }
 ```
 
+Полезные команды: </br>
+посмотреть все группы, переменные </br>
+```ansible-inventory --list  </br>```
+или 
+```ansible-inventory --graph </br>```
 
-3. Мой Первый Плейбук - написать плейбук по установке Docker на две машины и выполнить его.
+Еще больше информации: </br>
+```ansible all -m setup``` </br>
+
+Запуск чего-нибудь </br>
+```ansible all -m shell -a "uptime" ```  </br>
+```ansible all -m shell -a "ls /var"``` и т.д. </br>
+
+``ansible all -m command -a "ls /var"`` (не работают перенаправления и проч.)  </br>
+
+Копирование файла на все хосты:  </br>
+```ansible all -m copy -a "src=test-file.txt dest=/home mode=777" -b ``` </br>
+
+Удаление файла (и не только)  </br>
+```ansible all -m file -a "path=/home/test-file.txt state=absent" -b ```</br> 
+
+Загрузка файлов по URL </br>
+```ansible all -m get_url -a "url=some_link dest=/home" -b``` </br>
+
+Установка </br>
+```ansible all -m yum -a "name=stress state=installed" -b``` </br>
+
+Удаление </br>
+```ansible all -m yum -a "name=stress state=removed" -b``` </br>
+
+Проверка доступности сайта: </br>
+```ansible all -m uri -a "url=http://ya.ru"``` </br>
+
+Прочитать что-то по url: </br>
+```ansible all -m uri -a "url=http://ya.ru return_content=yes"``` </br>
+
+Поставить апач: </br>
+```ansible all -m yum -a "name=httpd state=installed" -b``` </br>
+```ansible all -m service -a "name=httpd state=started enabled=yes"``` </br>
+
+Дэбагинг, посмотреть инфо о выполнении команд </br>
+```
+ansible all -m shell -a "uptime" -v </br>
+ansible all -m shell -a "uptime" -vv </br>
+ansible all -m shell -a "uptime" -vvv </br>
+ansible all -m shell -a "uptime" -vvvv </br>
+ansible all -m shell -a "uptime" -vvvvv </br>
+```
+
+Список модулей ансибла </br>
+```ansible-doc -l </br>```
 
 
+3. Мой Первый Плейбук - написать плейбук по установке Docker на две машины и выполнить его. </br>
+
+Пример содержимого простейшего плейбука (просто пингует): </br>
+
+```
+---
+- name: Test connect to my servers
+  hosts: all
+  become: yes
+
+  tasks:
+
+  - name: ping my servers
+    ping:
+```
+Запускать плейбук так: ```ansible-playbook playbook1.yml``` </br>
+ 
+Для выполнения задания 3 создан файл docker_play.yml </br>
+(запускать командой ```ansible-playbook docker_play.yml```) </br>
+
+Для удобства ниже приведено содержимое этого файла: </br>
+
+```
+---
+- name: install docker in tsp
+  hosts: tsp_servers
+  become: yes
+
+  tasks:
+    - name: install aptitude using apt
+      apt: name=aptitude state=latest update_cache=yes force_apt_get=yes
+
+    - name: install required packages
+      apt: name={{ item }} state=latest update_cache=yes
+      loop: [ 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common']
+
+    - name: gpg apt key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: add docker repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu bionic stable
+        state: present
+
+    - name: update apt and install docker-ce
+      apt: update_cache=yes name=docker-ce state=latest
+```
 
 
-       
+А это, то что мне больше нравится по оформлению, но я не заставил это работать :-(
+```
+---
+- hosts: docker
+  become: true
+  tasks:
+    - name: install depensy
+      apt:
+        name: "{{item}}"
+        state: present
+        update_cache: yes
+      loop:
+        - apt-transport-https
+        - ca-certificates
+        - curl
+        - gnupg-agent
+        - software-properties-common- name: add GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present- name: add repository docker
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu bionic stable
+        state: present- name: install docker
+      apt:
+        name: "{{item}}"
+        state: latest
+        update_cache: yes
+      loop:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io- name: make sure that docker was started and enabled
+      service:
+        name: docker
+        state: started
+        enabled: yeshandlers
+    - name: restart docker
+      service: 
+        name: docker 
+        state: restarted
+```
+      
 EXTRA 1. Написать плейбук по установке Docker и одного из (LAMP/LEMP стек, Wordpress, ELK, MEAN - GALAXY нельзя) в Docker.
 
 
