@@ -1,0 +1,11 @@
+version: '3'
+services:
+ myjenkins:
+  image: "jenkins/jenkins:2.289.1-lts"
+  container_name: "jenkins"
+  ports:
+  - 8080:8080
+  volumes:
+  - ./jenkins/:/var/jenkins
+  environment:
+  - TESTENV=test
