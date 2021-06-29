@@ -82,16 +82,111 @@ services:
 ### 2. Установить необходимые плагины (если потребуются на ваше усмотрение).
 Плагины устанавливаются либо сразу после разблокировки (defaulе набор или custom), 
 а также, при необходимости, через Dashboard (manage jenkins ---> manage plugin) </br>
-Добавил плагины для докера.
+Добавил плагины для докера (ssh-agent и ssh-slave).
 
 ### 3. Настроить несколько билд агентов.
+Делал в aws по этому мануалу (получилось) - https://www.jenkins.io/doc/book/using/using-agents/#ji-toolbar
+Эксперименты с докером заняли много времени, которое можно было уделить Дженкинсу. 
 
+Но на локальных виртуальных машинах строго по заданию не получается. 
+Если контейнеры на одном хосте - то всё ок.
+Если мастер в контейнере, а ноды нет - тоже ок.
+Но если на разных, то мастер Дженкинса из своего контейнера пытается подключиться к ноде
+в другом контейнере на другом хосте, и вместо этого происходят попытки подключения к хостам,
+а не к контейнерам. 
 
+Решение нашел вот такое: https://www.netangels.pro/article/ssh-to-docker/
+Не уверен, что оптимальное.
 
 
 ### 4. Создать Freestyle project. Который будет в результате выполнения на экран выводить текущее время.
+Тут всё просто. (но непонятно. Что значит на экран? в консоли? в браузере? в BIOS?)
+
+Если речь о браузере:
+
+В разделе Build нашего проекта в первый execute shell добавил сам код страницы 
+```
+echo '------------------build start--------------------'
+cat <<EOF > index.html
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv=Content-Type content="text/html;charset=UTF-8">
+<title>Hello everyone!</title>
+<meta name="description" content="More HelloWorld for God of HelloWorld! XD">
+<script type="text/javascript">
+function startTime()
+{
+var tm=new Date();
+var h=tm.getHours();
+var m=tm.getMinutes();
+var s=tm.getSeconds();
+m=checkTime(m);
+s=checkTime(s);
+document.getElementById('timer').innerHTML=h+":"+m+":"+s;
+t=setTimeout('startTime()',500);
+}
+function checkTime(i)
+{
+if (i < 10)
+{
+i="0" + i;
+}
+return i;
+}
+</script>
+</head>
+
+<body onload="startTime()">
+  <div><b>Hello Everyone :-)</b></div>
+  <div id="timer"></div>
+</body>
+
+</html>
+EOF
+echo '------------------build finish--------------------' 
+
+```
+Во втором execute shell будет тест (просто считает количество Hello. Если их хватает - всё ок.)
+```
+echo '------------------test start--------------------'
+
+result=`grep "Hello" index.html | wc -l`
+echo $result
+
+if [ "$result" = "3"]
+then
+    echo "Test Passed"
+    exit 0
+else
+    echo "Test Failed"
+    exit 1
+fi
+echo '------------------test finish--------------------'
+
+```
+Деплоим это с помощью плагина Publish Over SSH 
+перемещаем index.html в предварительно запущенный где-нибудь apache2 в /var/www/html/ и смотрим браузер.
+(были танцы с ключами).
 
 
+Если всё делать упрощенно:
+В разделе Build в execute shell добавим команду 
+sh -c date
+запустим джобу и посмотрим лог.
+
+Там будет что-то похожее:
+
+```
+Started by user Ed_Elensky
+Running as SYSTEM
+Building on master in workspace /var/jenkins_home/workspace/time2
+[time2] $ /bin/sh -xe /tmp/jenkins4604948750337872272.sh
++ sh -c date
+Tue 29 Jun 2021 12:09:06 PM UTC
+Finished: SUCCESS
+```
+Сложностей не возникло.
 
 
 ### 5. Создать Pipeline который будет на хосте выполнять команду docker ps -a.
