@@ -312,7 +312,7 @@ pipeline {
             '''
             }    
         }
-        stage('view-my-containers') {
+        stage('view-my-images') {
             steps {
                sh("docker images")
             }
@@ -330,7 +330,7 @@ pipeline {
 
 ### 7. Передать переменную PASSWORD=QWERTY! В зашифрованном виде в докер контейнер.
  
-
+Делается через env + plugins. 
 
 
 
