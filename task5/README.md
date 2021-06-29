@@ -190,9 +190,101 @@ Finished: SUCCESS
 
 
 ### 5. Создать Pipeline который будет на хосте выполнять команду docker ps -a.
+С виду всё просто, но есть подводные камни. 
+Если Дженкинс или ноды на которых выполняется джоба не в контейнере то всё очень просто (выполняем docker ps -a и смотрим лог)
+Несмотря на то, что из контейнера я могу подключиться к хосту по ssh, такие финты в pipeline не проходят :)))
+```
+pipeline {
+    agent any
+    stages {
+        stage('ask') {
+            steps {
+                sh '''
+                  ssh user@192.168.0.205
+                  docker ps -a
+                '''  
+            }
+        }
+    }
+}
+```
+вот пример log если выполнять в pipe ssh login@adress 
+```
+Started by user Ed_Elensky
+Running in Durability level: MAX_SURVIVABILITY
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in /var/jenkins_home/workspace/ask-docker-in-host
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (ask)
+[Pipeline] sh
++ ssh user@192.168.0.205
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Welcome to Ubuntu 20.04.2 LTS (GNU/Linux 5.8.0-59-generic x86_64)
 
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
 
+0 updates can be applied immediately.
 
+Your Hardware Enablement Stack (HWE) is supported until April 2025.
++ docker ps -a
+/var/jenkins_home/workspace/ask-docker-in-host@tmp/durable-6908c9b7/script.sh: 3: /var/jenkins_home/workspace/ask-docker-in-host@tmp/durable-6908c9b7/script.sh: docker: not found
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+ERROR: script returned exit code 127
+Finished: FAILURE
+```
+В общем, так делать не надо, но это поучительно.
+
+А вот так уже лучше:
+```
+pipeline {
+    agent any
+    stages {
+        stage('ask') {
+            agent {
+                label 'user-VirtualBox1'
+            }
+            steps {
+                sh("docker ps -a")
+            }
+        }
+    }
+}
+```
+Для этого хост был подключен к дженкинсу как нода. 
+Не совсем то, что я хотел изначально. 
+(Думал, что реально любую систему из дженкинса получится опросить, а тут их очень плотно подружить пришлось.)
+
+Вывод такой:
+```
+Started by user Ed_Elensky
+Running in Durability level: MAX_SURVIVABILITY
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in /var/jenkins_home/workspace/ask-docker-in-host
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (ask)
+[Pipeline] sh
++ docker ps -a
+CONTAINER ID   IMAGE                         COMMAND                  CREATED        STATUS        PORTS                                                                                                                                            NAMES 
+49225d3ab621   jenkins/jenkins:2.289.1-lts   "/sbin/tini -- /usr/…"   12 hours ago   Up 12 hours   0.0.0.0:8080->8080/tcp, :::8080->8080/tcp, 50000/tcp, 0.0.0.0:49155->1342/tcp, :::49155->1342/tcp, 0.0.0.0:49154->2222/tcp, :::49154->2222/tcp   jenkins 
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Finished: SUCCESS
+```
+
+Досих пор не понимаю, почему ноды локальных виртуалках попили крови. На aws такого не было, зато с ресурсами беда. )))
 
 ### 6. Создать Pipeline который будет выкачивать из вашего репозитория код и будет собирать докер образ из вашего Dockerfile (который вы писали во время знакомства с докером).
 
