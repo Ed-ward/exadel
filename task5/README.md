@@ -194,7 +194,7 @@ Finished: SUCCESS
 
 ### 5. Создать Pipeline который будет на хосте выполнять команду docker ps -a.
 С виду всё просто, но есть подводные камни. 
-Если Дженкинс или ноды на которых выполняется джоба не в контейнере то всё очень просто (выполняем docker ps -a и смотрим лог)
+Если Дженкинс или ноды на которых выполняется джоба не в контейнере, то всё очень просто (выполняем docker ps -a и смотрим лог)
 Несмотря на то, что из контейнера я могу подключиться к хосту по ssh, такие финты в pipeline не проходят :)))
 ```
 pipeline {
@@ -326,7 +326,7 @@ pipeline {
 * заходим в папку с заданием по докеру и билдим образ
 * смотрим, что получилось
 
-*/не забыть сделать скрин/*
+*/скрин есть в папке этого задания/*
 
 ### 7. Передать переменную PASSWORD=QWERTY! В зашифрованном виде в докер контейнер.
 
@@ -334,6 +334,7 @@ pipeline {
 1) научиться передавать переменные окружения из Jenkins в контейнер Docker. 
 2) научиться скрывать/шифровать передаваемые данные.
 
+### A. Не юзаем плагины. </br>
 Про способы передачи переменных среды нагуглил и почитал тут (основные решения - встроенный функционал или плагины): https://codengineering.ru/q/how-to-set-environment-variables-in-jenkins-21926
 Решил не усложнять и использовать установку переменной окружения через "управление Дженкинс - настройка системы - глобальные свойства - чекбокс переменные окружения - добавить переменные окружения". Это самый простой и наименее навязчивый способ сделать это.
 
@@ -345,15 +346,69 @@ pipeline {
 ```
 docker  run -d -e PASSWORD=$PASSWORD tomcat
 ```
-(Это работает во Freestyle project, как реализовать в pipe я пока не решил.)
+(Это работает во Freestyle project, но как реализовать в pipe я пока не решил.)
+
+### Б. Плагин для шифрования передаваемых паролей. </br>
+Плагин "Mask Passwords" я нашел тут https://russianblogs.com/article/6598336157/ еще когда 
+выполнял первые пункты этого задания и знакомился с обзорной информацией по инструменту.
+В случае использования плагина "Mask passwords" можно передавать зашифрованные переменные
+как в Freestyle project так и в Pipeline. </br>
+После установки плагина нужно указать значение пароля для PASSWORD 
+в System Management-System Settings, сделать JOB, проверить передачу пароля 
+после чего включить функцию шифрования паролей.</br>
+После этого получить значение можно так: ```PASSWORD=${PASSWORD}```.
+При этом значение пароля в консоли отображаться уже не будет, а
+```echo PASSWORD=$PASSWORD``` выдаст в лог ```PASSWORD=********```. 
+
+В моем случае код pipe выглядит так (запускает то, что сбилдилось в 6м пункте): 
+```
+pipeline {
+    agent {
+            label 'node1'
+          }
+    stages {
+        stage('Deploy') {
+            steps {
+                sh '''
+                    docker  run -it -d -e PASSWORD=$PASSWORD task3
+                    docker ps
+                 '''
+            }
+        }
+    }
+}
+```
+
+а вывод вот так:
+```
+[Pipeline] { (Deploy)
+[Pipeline] sh
+Warning: A secret was passed to "sh" using Groovy String interpolation, which is insecure.
+		 Affected argument(s) used the following variable(s): [PASSWORD]
+		 See https://jenkins.io/redirect/groovy-string-interpolation for details.
++ docker  run -it -d -e PASSWORD=$PASSWORD task3:pipeline
+97763956e6e9c7064cc5e2299bb784275878d464adbe9bb715ae39dc7145ca21
++ docker ps
+CONTAINER ID   IMAGE    COMMAND                  CREATED        STATUS                  PORTS                               NAMES
+4cb83e6266fe   task3    "/docker-entrypoint.…"   3 second ago   Up Less than a second   0.0.0.0:22->22/tcp, :::22->22/tcp   task3inpipejenkins
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // withCredentials
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Finished: SUCCESS
+```
+Если сходим в контейнер ```docker exec -ti 4cb83e6266fe bash```  </br>
+то найдем там свою переменную:
+```
+printenv PASSWORD
+QWERTY!
+```
 
 
-В случае использования плагина "Mask passwords" можно передавать зашифрованные переменные как в Freestyle project так и в Pipeline:
-
-
-
-
-
+-------------------------------
 ### EXTRA: 
 1. Написать pipeline который будет на дополнительной виртуальной машине запускать докер контейнер из вашего докерфайла.
 2. Написать ансибл скрипт который будет разворачивать дженкинс.
