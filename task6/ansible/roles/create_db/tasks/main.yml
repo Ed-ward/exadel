@@ -1,0 +1,19 @@
+---
+- name: create pgdb
+  community.postgresql.postgresql_db:
+    name: exabasepg
+    login_user: postgres
+    login_password: "{{ db_password }}"
+    login_host: localhost
+
+- name: restore pgdb
+  copy:
+    src: "dump.sql"
+    dest: "home"
+  community.postgresql.postgresql_db:
+    name: exabasepg
+    state: restore
+    target: home/dump.sql
+    login_user: postgres
+    login_password: "{{ db_password }}"
+    login_host: localhost

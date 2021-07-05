@@ -3,6 +3,5 @@
 
   roles:
     - docker_install
-    - {role: psql_install, become: yes}
-    - postgres_run
+    - psql_install
     - create_db

@@ -1,0 +1,13 @@
+---
+- name: start pgdb container
+  hosts: test_servers
+
+  tasks:
+    - name: start
+      community.docker.docker_container:
+      name: exabasepg
+      image: postgres:alpine
+      ports:
+        - "5432:5432"
+      env:
+        POSTGRES_PASSWORD: "{{ db_password }}"
