@@ -28,17 +28,22 @@ sudo -u postgres psql
 
 ### Создание нового пользователя:
 ```
-sudo su - postgres -c "createuser newuser"
+su - postgres -c "createuser exa_user"
 ```
 ### Создание новой БД
-```sudo su - postgres -c "createdb new_base"```
+```su - postgres -c "createdb exa_base"```
 ### Подключение к серверу БД:
 
 ```sudo -u postgres psql```
+или
+```su - postgres```
+
+### Запуск консоли
+```psql```
 
 ### Даем пользователю права:
 
-```grant all privileges on database new_base to newuser;```
+```grant all privileges on database exa_base to exa_user;```
 
 --------   
 
@@ -48,10 +53,25 @@ Result (ID; StudentId; Task1; Task2; Task3; Task4);
 Данные брать из:
 https://docs.google.com/spreadsheets/d/1bJ6aDyDSBPAbck56ji6q98rw8S69i_cDymm4gN0vu3o/edit?ts=60c0e27d#gid=0
 
-#### Создание таблиц 
-```CREATE TABLE Students (ID integer, Student text, StudentId integer);```
 
-```CREATE TABLE Result (ID integer, StudentId integer, Task1 text, Task2 text, Task3 text, Task4 text);```
+
+#### Создание таблиц 
+```CREATE TABLE Students (ID serial , Student text, StudentID int not null);```
+
+```CREATE TABLE Result  (ID serial , StudentID INTEGER, TASK1 text, TASK2 text, TASK3 text, TASK4 text);```
+
+#### импорт данных из csv в таблицу postgresql
+
+были созданы два файла с данными в формате csv и с помощью mobaxterm помещены в контейнер
+
+затем, руководствуясь этими ответами, был выполнен импорт
+
+https://stackoverflow.com/questions/2987433/how-to-import-csv-file-data-into-a-postgresql-table
+
+```
+copy Students(Student,StudentId) FROM '/home/students.csv' DELIMITER ',' CSV HEADER;
+copy Result(StudentId,Task1,Task2,Task3,Task4) FROM '/home/result.csv' DELIMITER ',' CSV HEADER;
+```
 
 
 EXTRA: 2.1. Написать SQL скрипт, который будет заполнять базу данных и проверять на наличие уже существующих таблиц/записей.
