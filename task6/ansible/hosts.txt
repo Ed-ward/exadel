@@ -1,0 +1,15 @@
+[control_servers]
+srv0 ansible_host=172.31.25.69
+
+[test_servers]
+srv1 ansible_host=172.31.22.187
+
+[all_servers:children]
+control_servers
+test_servers
+
+
+
+
+
+

@@ -1,0 +1,8 @@
+- name: pg_db
+  hosts: test_servers
+
+  roles:
+    - docker_install
+    - {role: psql_install, become: yes}
+    - postgres_run
+    - create_db
