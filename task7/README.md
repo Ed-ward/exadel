@@ -111,10 +111,29 @@ sudo systemctl restart zabbix-agent
 
 Добавить новый хост в Zabbix на вкладке Hosts и наблюдать за его состоянием.
 
+------------------
+#### Быстрее и удобнее можно установить Заббикс в контейнере 
+Подробная информация есть тут https://www.zabbix.com/documentation/4.0/ru/manual/installation/containers
+
+Готовое решение Zabbix со встроенными MySQL базой данных, Zabbix сервером, Zabbix веб-интерфейсом выглядит так:
+```
+docker run --name zabbix-appliance -t \
+      -p 10051:10051 \
+      -p 80:80 \
+      --restart unless-stopped \
+      -d zabbix/zabbix-appliance:latest
+```
+Можно использовать отдельные контейнеры для БД, сервера Заббикс и Вебинтерфейса. 
+
+В такой случае более удобен Docker Compose.
+
+Ямлы смотреть тут: https://github.com/zabbix/zabbix-docker
+
+Запускать так: ``` docker-compose -f ./docker-compose_v3_ubuntu_mysql_local.yaml up -d ```
 
 
 ####EXTRA 1.2.1: сделать это ансиблом
-
+Ох уж этот ансибл))
 
 #### 1.3 Сделать несколько своих дашбородов, куда вывести данные со своих триггеров (например мониторить размер базы данных из предыдущего задания и включать алерт при любом изменении ее размера - можно спровоцировать вручную)
 
