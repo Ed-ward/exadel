@@ -97,19 +97,69 @@ sudo apt install zabbix-agent
 ```
 Отредактировать конфигурационный файл (указать IP адрес сервера и имя хоста):
 ```
-sudo vi /etc/zabbix/zabbix_agentd.conf
+sudo nano /etc/zabbix/zabbix_agentd.conf
 ```
 ```
-Server=192.168.1.200
-Hostname=Zabbix
+Server=192.168.0.100
+Hostname=ZabbixServer
 ```
-
+(это вариант passive check)
 После изменения конфигурации перезапустить сервис zabbix-agent:
 ```
 sudo systemctl restart zabbix-agent
 ```
 
-Добавить новый хост в Zabbix на вкладке Hosts и наблюдать за его состоянием.
+<details><summary> Дело было так: </summary>
+<pre>
+user@user-VirtualBox1:~$ sudo apt install zabbix-agent
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+The following packages were automatically installed and are no longer required:
+  libfprint-2-tod1 libllvm10
+Use 'sudo apt autoremove' to remove them.
+The following NEW packages will be installed:
+  zabbix-agent
+0 upgraded, 1 newly installed, 0 to remove and 10 not upgraded.
+Need to get 204 kB of archives.
+After this operation, 816 kB of additional disk space will be used.
+Get:1 http://repo.zabbix.com/zabbix/5.2/ubuntu focal/main amd64 zabbix-agent amd64 1:5.2.7-1+ubuntu20.04 [204 kB]
+Fetched 204 kB in 1s (218 kB/s)        
+Selecting previously unselected package zabbix-agent.
+(Reading database ... 185234 files and directories currently installed.)
+Preparing to unpack .../zabbix-agent_1%3a5.2.7-1+ubuntu20.04_amd64.deb ...
+Unpacking zabbix-agent (1:5.2.7-1+ubuntu20.04) ...
+Setting up zabbix-agent (1:5.2.7-1+ubuntu20.04) ...
+Created symlink /etc/systemd/system/multi-user.target.wants/zabbix-agent.service
+ → /lib/systemd/system/zabbix-agent.service.
+Processing triggers for man-db (2.9.1-1) ...
+Processing triggers for systemd (245.4-4ubuntu3.7) ...
+user@user-VirtualBox1:~$ sudo nano /etc/zabbix/zabbix_agentd.conf
+user@user-VirtualBox1:~$ sudo systemctl restart zabbix-agent
+user@user-VirtualBox1:~$ sudo systemctl status zabbix-agent
+● zabbix-agent.service - Zabbix Agent
+     Loaded: loaded (/lib/systemd/system/zabbix-agent.service; enabled; vendor >
+     Active: active (running) since Wed 2021-07-07 19:20:32 +03; 27s ago
+    Process: 11813 ExecStart=/usr/sbin/zabbix_agentd -c $CONFFILE (code=exited,>
+   Main PID: 11815 (zabbix_agentd)
+      Tasks: 6 (limit: 4652)
+     Memory: 4.4M
+     CGroup: /system.slice/zabbix-agent.service
+             ├─11815 /usr/sbin/zabbix_agentd -c /etc/zabbix/zabbix_agentd.conf
+             ├─11816 /usr/sbin/zabbix_agentd: collector [idle 1 sec]
+             ├─11817 /usr/sbin/zabbix_agentd: listener #1 [waiting for connecti>
+             ├─11818 /usr/sbin/zabbix_agentd: listener #2 [waiting for connecti>
+             ├─11819 /usr/sbin/zabbix_agentd: listener #3 [waiting for connecti>
+             └─11820 /usr/sbin/zabbix_agentd: active checks #1 [idle 1 sec]
+
+ліп 07 19:20:32 user-VirtualBox1 systemd[1]: Starting Zabbix Agent...
+ліп 07 19:20:32 user-VirtualBox1 systemd[1]: Started Zabbix Agent.
+user@user-VirtualBox1:~$ 
+</pre>
+</details>
+
+
+Теперь можно добавить новый хост в Zabbix на вкладке Hosts и наблюдать за его состоянием.
 
 ------------------
 #### Быстрее и удобнее можно установить Заббикс в контейнере 
@@ -132,25 +182,79 @@ docker run --name zabbix-appliance -t \
 Запускать так: ``` docker-compose -f ./docker-compose_v3_ubuntu_mysql_local.yaml up -d ```
 
 
-####EXTRA 1.2.1: сделать это ансиблом
+#### EXTRA 1.2.1: сделать это ансиблом
+
 Ох уж этот ансибл))
 
 #### 1.3 Сделать несколько своих дашбородов, куда вывести данные со своих триггеров (например мониторить размер базы данных из предыдущего задания и включать алерт при любом изменении ее размера - можно спровоцировать вручную)
 
+См. скрины.
+Мониторил загрузку процессора. Алерты при загрузке >90%
 
 #### 1.4 Active check vs passive check - применить у себя оба вида - продемонстрировать.
 
+читал это https://blog.zabbix.com/zabbix-agent-active-vs-passive/9207/
+
+* Passive check делал так:
+Отредактировать конфигурационный файл (указать IP адрес сервера и имя хоста):
+```
+sudo nano /etc/zabbix/zabbix_agentd.conf
+```
+```
+Server=192.168.0.100
+Hostname=ZabbixServer
+```
+
+После изменения конфигурации перезапустить сервис zabbix-agent:
+```
+sudo systemctl restart zabbix-agent
+```
+
+
+* Active check - вот так:
+Отредактировать конфигурационный файл (указать IP адрес сервера и имя хоста):
+```
+sudo nano /etc/zabbix/zabbix_agentd.conf
+```
+```
+ServerActive=192.168.0.135
+Hostname=ZabbixServer
+```
+
+После изменения конфигурации перезапустить сервис zabbix-agent:
+```
+sudo systemctl restart zabbix-agent
+```
 
 #### 1.5 Сделать безагентный чек любого ресурса (ICMP ping)
 
+ICMP из коробки Заббикс не умеет, но это легко исправляется.
+По видеокурсу OTUS сделан шаблон для ICMP (скрин).
+
+Мониторится три узла: локальный хост без агента, днс гугла 8.8.8.8 и неправильный днс гугла 8.8.8.5 =)
+Еще по SNMP мониторится сетевая железка.
+Скрины прилагаются.
+
+UPD: коллеги подсказали, что уже Template Module ICMP Ping есть (потом поищу).
 
 #### 1.6 Спровоцировать алерт - и создать Maintenance инструкцию 
 
+Create a Maintenance in Zabbix https://www.youtube.com/watch?v=ALw6bMbmfcg
+
+Был алерт на "плохой пинг 8.8.8.5" в режиме обслуживания система игнорит алерты.
+Может быть полезно при работах на действующей системе.
+
+скрин
 
 #### 1.7 Нарисовать дашборд с ключевыми узлами инфраструктуры и мониторингом как и хостов так и установленного на них софта
 
+Поставил на один узел докер, на другой апач.
 
+В настройках заббикса указал что к узлам надо применить шаблоны для докера и апача. 
 
+На дашборд вывел инфо по ним плюс опрос сетевой железки по СНМП и состояние сервера мониторинга.
+
+скрин или могу расшарить.
 
 
 ### 2. ELK: 
