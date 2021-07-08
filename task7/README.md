@@ -3,7 +3,10 @@
 ## Tasks:
 ### 1. Zabbix:
 Тут нормально описано https://losst.ru/ustanovka-zabbix-na-ubuntu
-#### 1.1 Установить на сервер - сконфигурировать веб и базу 
+
+--------
+
+#### 1.1 Установить на сервер - сконфигурировать веб и базу
 Для установки с нуля потребуется предварительная установка Apache, PHP, MySQL:
 ```
 sudo apt update
@@ -75,6 +78,7 @@ sudo systemctl restart zabbix-server
 * проверить корректность настроек и применить
 * Залогиниться в Заббикс (дефолтно: логин Admin и пароль zabbix.)
 
+-------------
 
 #### 1.2 Поставить на подготовленные ранее сервера или виртуалки заббикс агенты 
 
@@ -181,16 +185,18 @@ docker run --name zabbix-appliance -t \
 
 Запускать так: ``` docker-compose -f ./docker-compose_v3_ubuntu_mysql_local.yaml up -d ```
 
-
+---------------------
 #### EXTRA 1.2.1: сделать это ансиблом
 
 Ох уж этот ансибл))
 
+-----------------
 #### 1.3 Сделать несколько своих дашбородов, куда вывести данные со своих триггеров (например мониторить размер базы данных из предыдущего задания и включать алерт при любом изменении ее размера - можно спровоцировать вручную)
 
 См. скрины.
 Мониторил загрузку процессора. Алерты при загрузке >90%
 
+----------------
 #### 1.4 Active check vs passive check - применить у себя оба вида - продемонстрировать.
 
 читал это https://blog.zabbix.com/zabbix-agent-active-vs-passive/9207/
@@ -226,6 +232,7 @@ Hostname=ZabbixServer
 sudo systemctl restart zabbix-agent
 ```
 
+-------------
 #### 1.5 Сделать безагентный чек любого ресурса (ICMP ping)
 
 ICMP из коробки Заббикс не умеет, но это легко исправляется.
@@ -237,6 +244,7 @@ ICMP из коробки Заббикс не умеет, но это легко 
 
 UPD: коллеги подсказали, что уже Template Module ICMP Ping есть (потом поищу).
 
+----------------
 #### 1.6 Спровоцировать алерт - и создать Maintenance инструкцию 
 
 Create a Maintenance in Zabbix https://www.youtube.com/watch?v=ALw6bMbmfcg
@@ -246,6 +254,7 @@ Create a Maintenance in Zabbix https://www.youtube.com/watch?v=ALw6bMbmfcg
 
 скрин
 
+-----------------
 #### 1.7 Нарисовать дашборд с ключевыми узлами инфраструктуры и мониторингом как и хостов так и установленного на них софта
 
 Поставил на один узел докер, на другой апач.
@@ -256,14 +265,110 @@ Create a Maintenance in Zabbix https://www.youtube.com/watch?v=ALw6bMbmfcg
 
 скрин или могу расшарить.
 
-
+-----------
 ### 2. ELK: 
-
 
 Никто не забыт и ничто не забыто.
 
 
 #### 2.1 Установить и настроить ELK 
+Читал тут: https://www.digitalocean.com/community/tutorials/how-to-install-elasticsearch-logstash-and-kibana-elastic-stack-on-ubuntu-20-04-ru
+
+Elastic Stack (прежнее название — комплекс ELK) включает четыре основных компонента:
+
+* Elasticsearch: распределенная поисковая система RESTful, которая сохраняет все собранные данные.
+* Logstash: элемент обработки данных комплекса Elastic, отправляющий входящие данные в Elasticsearch.
+* Kibana: веб-интерфейс для поиска и визуализации журналов.
+* Beats: компактные элементы переноса данных одиночного назначения, которые могут отправлять данные с сотен или тысяч компютеров в Logstash или Elasticsearch.
+
+----------
+
+Шаг 1 — Установка и настройка Elasticsearch
+
+Добавляем ключ:
+```
+    curl -fsSL https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo apt-key add -
+```
+ 
+
+Добавляем список источников Elastic в директорию sources.list.d, где APT будет искать новые источники:
+```
+    echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list
+```
+Обновляем списки пакетов, чтобы APT мог прочитать новый источник Elastic:
+```
+    sudo apt update
+```
+
+Устанавливаем Elasticsearch:
+```
+    sudo apt install elasticsearch
+```
+ 
+Система Elasticsearch установлена (и готова к настройке). 
+
+Правим файл конфигурации Elasticsearch, elasticsearch.yml. :
+```
+    sudo nano /etc/elasticsearch/elasticsearch.yml
+```
+*помним про отступы*
+
+В файле *elasticsearch.yml* можно настроить варианты конфигурации для кластера, узла, пути, памяти, сети, обнаружения и шлюза.
+Для демонстрации односерверной конфигурации надо регулировать настройки только для хоста сети.
+
+Elasticsearch прослушивает весь трафик порта 9200.
+Для ограничения доступа и повышения безопасности можно найти в /etc/elasticsearch/elasticsearch.yml строку с указанием network.host, раскомментировать и заменить значение на localhost:
+
+```
+# ---------------------------------- Network -----------------------------------
+#
+# Set the bind address to a specific IP (IPv4 or IPv6):
+#
+network.host: localhost
+```
+
+Это минимальные настройки, с которыми можно начинать использовать Elasticsearch. 
+Запускаем службу Elasticsearch (запуск может занять некоторое время). 
+```
+    sudo systemctl start elasticsearch
+```
+ 
+Затем можно активировать автозагрузку Elasticsearch при каждом запуске сервера:
+```
+    sudo systemctl enable elasticsearch
+```
+ 
+Протестировать работу службы Elasticsearch, отправив запрос HTTP:
+```
+    curl -X GET "localhost:9200"
+```
+Получим ответ, содержащий базовую информацию о локальном узле:
+```
+user@user-VirtualBox1:~$ curl -X GET "localhost:9200"
+{
+  "name" : "user-VirtualBox1",
+  "cluster_name" : "elasticsearch",
+  "cluster_uuid" : "COmhRmEwR8ey1CtcFjWIbw",
+  "version" : {
+    "number" : "7.13.3",
+    "build_flavor" : "default",
+    "build_type" : "deb",
+    "build_hash" : "5d21bea28db1e89ecc1f66311ebdec9dc3aa7d64",
+    "build_date" : "2021-07-02T12:06:10.804015202Z",
+    "build_snapshot" : false,
+    "lucene_version" : "8.8.2",
+    "minimum_wire_compatibility_version" : "6.8.0",
+    "minimum_index_compatibility_version" : "6.0.0-beta1"
+  },
+  "tagline" : "You Know, for Search"
+}
+user@user-VirtualBox1:~$ 
+```
+Установка и настройка Elasticsearch завершена
+
+-----------
+
+
 
 
 #### 2.2 Организовать сбор логов из докера в ELK и получать данные от запущенных контейнеров
