@@ -1707,29 +1707,125 @@ user@user-VirtualBox1:~$
 Если получили ожидаемые результаты, перейти к следующему шагу, где увидим, 
 как выполняется навигация по информационным панелям Kibana.
 
+-------
+Также есть вариант установки ЕЛК-докер 
+```
+sudo sysctl -w vm.max_map_count=262144
+git clone https://github.com/deviantony/docker-elk.git
+cd docker-elk
+docker-compose up -d
+curl localhost:9200
+```
+(user: elastic password: changeme)
+
+
 --------
 #### 2.2 Организовать сбор логов из докера в ELK и получать данные от запущенных контейнеров
-
+Не совсем ясно, спрашивать поздно.
+Всмысле через вольюмы? вот так можно.
+```
+sudo docker run -d --name="logspout" --volume=/var/run/docker.sock:/var/run/docker.sock \
+gliderlabs/logspout syslog+tls://192.168.0.205:5000
+```
 
 #### 2.3 Настроить свои дашборды в ELK
 
+Сделал скрин в edit mode, едем дальше.
 
 #### EXTRA 2.4: Настроить фильтры на стороне Logstash (из поля message получить отдельные поля docker_container и docker_image)
 
+*возможно, позже*
 
 #### 2.5 Настроить мониторинг в ELK - получать метрики от ваших запущенных контейнеров
 
 
+
 #### 2.6 Посмотреть возможности и настройки
 
+Посмотрел (24 секунды)
 
 
-
+--------
 ### 3. Grafana:
-
 
 #### 3.1 Установить Grafana интегрировать с установленным ELK
 
+На Ubuntu Grafana устанавливается из репозитория производителя. 
+Скачаем GPG-ключ и добавим его в список надежных:
+```
+wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -
+```
+После этого добавим в систему репозиторий Grafana:
+```
+sudo add-apt-repository "deb https://packages.grafana.com/oss/deb stable main"
+```
+Далее обновляем кэш APT и установим Grafana:
+```
+sudo apt update
+sudo apt install grafana
+```
+После установки включаем автозагрузку и запускаем демон Grafana:
+```
+sudo systemctl enable grafana-server
+sudo systemctl start grafana-server
+```
+Установка завершена. 
+
+Проверим статус сервиса:
+```
+sudo systemctl status grafana-server
+```
+В результате получим вывод:
+```
+user@user-VirtualBox1:~$ sudo systemctl status grafana-server
+● grafana-server.service - Grafana instance
+     Loaded: loaded (/lib/systemd/system/grafana-server.service; enabled; vendo>
+     Active: active (running) since Thu 2021-07-08 18:43:18 +03; 13s ago
+       Docs: http://docs.grafana.org
+   Main PID: 8263 (grafana-server)
+      Tasks: 12 (limit: 4651)
+     Memory: 80.0M
+     CGroup: /system.slice/grafana-server.service
+             └─8263 /usr/sbin/grafana-server --config=/etc/grafana/grafana.ini >
+
+ліп 08 18:43:19 user-VirtualBox1 grafana-server[8263]: t=2021-07-08T18:43:19+03>
+ліп 08 18:43:19 user-VirtualBox1 grafana-server[8263]: t=2021-07-08T18:43:19+03>
+ліп 08 18:43:19 user-VirtualBox1 grafana-server[8263]: t=2021-07-08T18:43:19+03>
+ліп 08 18:43:19 user-VirtualBox1 grafana-server[8263]: t=2021-07-08T18:43:19+03>
+ліп 08 18:43:19 user-VirtualBox1 grafana-server[8263]: t=2021-07-08T18:43:19+03>
+ліп 08 18:43:19 user-VirtualBox1 grafana-server[8263]: t=2021-07-08T18:43:19+03>
+ліп 08 18:43:19 user-VirtualBox1 grafana-server[8263]: t=2021-07-08T18:43:19+03>
+ліп 08 18:43:19 user-VirtualBox1 grafana-server[8263]: t=2021-07-08T18:43:19+03>
+ліп 08 18:43:19 user-VirtualBox1 grafana-server[8263]: t=2021-07-08T18:43:19+03>
+ліп 08 18:43:19 user-VirtualBox1 grafana-server[8263]: t=2021-07-08T18:43:19+03>
+user@user-VirtualBox1:~$ ^C
+```
+
+
+Настройка брандмауэра для доступа к Grafana
+
+По умолчанию Grafana доступна на порту 3000. 
+При использовании firewalld или iptables, необходимо разрешить сетевой доступ к этому порту из внешнего мира.
+
+Добавление нового правила и перезагрузка сервиса firewalld для применения конфигурации:
+```
+firewall-cmd --zone=public --add-port=3000/tcp --permanent
+systemctl reload firewalld
+```
+или
+```
+    sudo ufw allow 3000
+```
+После выполнения описанных в этом разделе манипуляций, сетевой экран будет разрешать подключения по порту 3000. В этом можно убедиться, открыв в браузере интерфейс Grafana. Логин и пароль по умолчанию admin.
+
+Если не удается войти в Grafana или не можете вспомнить пароль, 
+через CLI административный пароль Web-интерфейса можно сбросить:
+```
+grafana-cli admin reset-admin-password --homepath "/usr/share/grafana" новый_пароль
+```
+После выполнения команды выше, можно входить с новым паролем.
+
+скрин графаны
 
 #### 3.2 Настроить Дашборды
 
